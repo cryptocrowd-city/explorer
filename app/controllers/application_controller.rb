@@ -114,8 +114,8 @@ class ApplicationController < ActionController::Base
   def name
     @title = "Name #{params[:name]}"
     
-    @output = ApplicationController::cli(['name_show', params[:name]])
-    @history = ApplicationController::cli(['name_history', params[:name]])
+    @output = ApplicationController::cli_direct(" name_show \"#{params[:name]}\"")
+    @history = ApplicationController::cli_direct(" name_history \"#{params[:name]}\"")
       
     if !@output.include?('name not found')
       @output = JSON.parse(@output)
