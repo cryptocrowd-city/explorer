@@ -1,0 +1,10 @@
+x = ApplicationController.new
+while true do
+  begin
+    x.generate_address_index
+  rescue Parallel::DeadWorker, Parallel::UndumpableException, ActiveRecord::StatementInvalid
+    ActiveRecord::Base.establish_connection
+    File.delete('indexer.lock')
+  end
+  sleep(10)
+end

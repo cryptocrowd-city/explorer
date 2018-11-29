@@ -62,7 +62,7 @@
       <% if @output["totals"]["input"] > 0 %>
       <tr>
         <td>Fees</td>
-        <td><%= @output["totals"]["input"] - @output["totals"]["output"] %> <%= ENV['COIN_SYMBOL'] %></td>
+        <td><%= (@output["totals"]["input"] - @output["totals"]["output"]).round(8) %> <%= ENV['COIN_SYMBOL'] %></td>
       </tr>
       <% end %>
     </table>
