@@ -10,7 +10,7 @@
   <body>
     <header>
       <nav>
-        <a href="/"><h1><%= ENV['SITE_HEADING'] %> <span><%= ENV['SITE_SUBTITLE'] %></span></h1></a>
+        <a href="/"><h1><div class = "logo"></div></h1></a>
         <%= form_tag({:action=>"search", :controller=>"application"},{:method=>"post"}) do %>
           <%= search_field_tag 'query', nil, placeholder: 'Search...' %>
           <%= button_tag 'Search' %>
@@ -24,8 +24,20 @@
       <%= yield %>
     </article>
     <footer>
-      <a href="/api">API</a>
-      <a href="https://github.com/tfreedman/explorer">Source</a>
+	  
+	   <div class="grid-x grid-margin-x">
+			<div class="small-2 cell"></div>
+			<div class="small-1 cell"><a href = "https://www.facebook.com/XAYAtech/" target = "blank"><div class = "iconbt iconbt1"></div></a></div>
+			<div class="small-1 cell"><a href = "https://twitter.com/XAYA_tech" target = "blank"><div class = "iconbt iconbt2"></div></a></div>
+			<div class="small-1 cell"><a href = "https://www.linkedin.com/company/xaya-platform/" target = "blank"><div class = "iconbt iconbt3"></div></a></div>
+			<div class="small-1 cell"><a href = "https://bitcointalk.org/index.php?topic=1784048.0" target = "blank"><div class = "iconbt iconbt4"></div></a></div>
+			<div class="small-1 cell"><a href = "https://t.me/xaya_en" target = "blank"><div class = "iconbt iconbt5"></div></a></div>
+			<div class="small-1 cell"><a href = "https://medium.com/@XAYA" target = "blank"><div class = "iconbt iconbt6"></div></a></div>
+			<div class="small-1 cell"><a href = "https://www.reddit.com/r/chimaera/" target = "blank"><div class = "iconbt iconbt7"></div></a></div>
+			<div class="small-2 cell" style = "padding-top: 30px;"><a href="https://xaya.io">XAYA Home</a> | <a href="https://github.com/tfreedman/explorer">Source</a></div>
+			<div class="small-1 cell"><div class = "xayalogobot"></div></div>
+			
+	   </div>	  
     </footer>
   </body>
 </html>

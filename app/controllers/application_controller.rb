@@ -19,8 +19,10 @@ class ApplicationController < ActionController::Base
       block["total_sent"] = total_sent
       @latest_blocks << block
     end
-    if ENV['COIN_NAME'] == 'Namecoin'
-      @latest_transactions = JSON.parse(ApplicationController::cli(['name_filter', '^[i]?d/', '6']))
+	
+	if ENV['COIN_NAME'] == 'Namecoin'
+      @latest_transactions = JSON.parse(ApplicationController::cli_direct(" name_scan '' 1200 '{\"maxConf\": 1200}'"))
+	  
       @latest_transactions.each_with_index do |tx, index|
         @latest_transactions[index]["age"] = ApplicationController::get_block(@latest_transactions[index]["height"])["time"]
         details = get_transaction(@latest_transactions[index]["txid"])
@@ -33,6 +35,7 @@ class ApplicationController < ActionController::Base
       end
       @latest_transactions = @latest_transactions.sort_by {|k| k["age"]}.reverse
     end
+	
   end
 
   def api
@@ -96,7 +99,7 @@ class ApplicationController < ActionController::Base
     @title = "Address #{params[:address]}"
     @address = Payment.where(address: params[:address]).order('id desc')
 
-    @complete_data = Block.where(ended: true).count == ApplicationController::cli('getblockcount').to_i
+    @complete_data = Block.where(ended: true).count == ApplicationController::cli(['getblockcount']).to_i
 
     if @address
       @balance = 0
@@ -164,8 +167,8 @@ class ApplicationController < ActionController::Base
       return :error
     else
       puts "Loading block index..."
-      total_blocks = ApplicationController::cli('getblockcount').to_i
-
+      total_blocks = ApplicationController::cli(['getblockcount']).to_i
+      puts "Totasl as #{total_blocks}"
       block_array = []
 
       Block.where(ended: false).find_each do |block|
@@ -177,6 +180,7 @@ class ApplicationController < ActionController::Base
 
       if $lockfile[:invalid_scan_time] + 86400 < Time.now.to_i
         puts "Re-scanning #{InvalidTransaction.count} invalid transactions"
+		ActiveRecord::Base.connection_pool.release_connection
         ActiveRecord::Base.connection_pool.with_connection do
           InvalidTransaction.find_each do |invalid_transaction|
             results = index_transactions([] << invalid_transaction.transaction_id)
@@ -203,6 +207,7 @@ class ApplicationController < ActionController::Base
       puts "Indexing payments in #{block_array.count} blocks"
 
       Parallel.map(block_array, isolation: true) do |block|
+	    ActiveRecord::Base.connection_pool.release_connection
         ActiveRecord::Base.connection_pool.with_connection do
           results = index_block(block)
 
@@ -235,11 +240,13 @@ class ApplicationController < ActionController::Base
   end
 
   def index_transactions(txids)
+  
     payments = []
     valid_transactions = []
     invalid_transactions = []
     txids.each_with_index do |txid, index|
       begin
+	    
         tx = get_transaction(txid, true, false)
 
         tx["vin"].each_with_index do |vin, vin_index|
@@ -263,17 +270,28 @@ class ApplicationController < ActionController::Base
         end
         valid_transactions << txid
       rescue StandardError => e
-        puts "FAILED ON TXID #{txid} - #{e}"
+        puts "FAILED ON TXID #{e}"
         invalid_transactions << InvalidTransaction.new(transaction_id: txid)
       end
     end
     return {payments: payments, valid_transactions: valid_transactions, invalid_transactions: invalid_transactions}
   end
+  
+  def self.cli_direct(command)
+  
+    require 'open3'
+    stdout_and_stderr_str, status = Open3.capture2e("#{ENV['CLI']} -rpcport=#{ENV['RPC_PORT']} -rpcuser=#{ENV['RPC_USER']} -rpcpassword='#{ENV['RPC_PASSWORD']}' #{command}")
+	return stdout_and_stderr_str
+  end  
 
   def self.cli(command)
+  
+    arguments = ""
+    command.each { |x| arguments += "#{x} " }
+	
     require 'open3'
-    stdout_and_stderr_str, status = Open3.capture2e({'rpcuser' => ENV['RPC_USER'], 'rpcpassword' => ENV['RPC_PASSWORD'], 'rpcport' => ENV['RPC_PORT'], 'rpcconnect' => ENV['RPC_CONNECT']}, ENV['CLI'], *command)
-    return stdout_and_stderr_str
+    stdout_and_stderr_str, status = Open3.capture2e("#{ENV['CLI']} -rpcport=#{ENV['RPC_PORT']} -rpcuser=#{ENV['RPC_USER']} -rpcpassword='#{ENV['RPC_PASSWORD']}' #{arguments}")
+	return stdout_and_stderr_str
   end
 
   def get_transaction(txid, include_input_transactions = false, include_totals = false)
@@ -304,8 +322,7 @@ class ApplicationController < ActionController::Base
       JSON.parse(ApplicationController::cli(['getblock', block]))
     else
       hash = ApplicationController::cli(['getblockhash', block.to_s])
-      JSON.parse(ApplicationController::cli(['getblock', hash]) 
-      )
+      JSON.parse(ApplicationController::cli(['getblock', hash]))
     end
   end
 
@@ -376,7 +393,7 @@ class ApplicationController < ActionController::Base
   end
 
   def api_getblock
-    render json: ApplicationController::cli(['getblock', params[:hash]])
+    render json: ApplicationController::cli(['getblock', params[:hash], params[:verbose]])
   end
 
   def api_getblockheader

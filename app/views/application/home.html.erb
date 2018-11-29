@@ -1,11 +1,12 @@
 <div class="flex-container">
   <div class="half">
     <h2>Market data</h2>
-    <script type="text/javascript" src="https://files.coinmarketcap.com/static/widget/currency.js"></script>
-    <div class="coinmarketcap-currency-widget" data-currencyid="<%= ENV['COINMARKETCAP_CURRENCY_ID'] %>" data-base="USD" data-secondary="BTC" data-ticker="true" data-rank="true" data-marketcap="true" data-volume="true" data-stats="USD" data-statsticker="true"></div>
+    Coming soon....
+	<div class = "comingLogo"></div>
   </div>
   
   <div class="half">
+  
     <h2>Latest blocks</h2>
     <table>
       <tr>
@@ -26,18 +27,18 @@
   </div>
 </div>
 
-<% if ENV['COIN_NAME'] == 'Namecoin' %>
-  <div class="full">
+
+<div class="full">
     <h2>Latest operations</h2>
     <% if @latest_transactions.count > 0 %>
     <table>
       <tr>
-        <th>Age</th>
-        <th>Block</th>
-        <th>Transaction</th>
-        <th>Operation</th>
-        <th>Name</th>
-        <th>Value</th>
+        <th style = "width: 2%;">Age</th>
+        <th style = "width: 1%;">Block</th>
+        <th style = "width: 1%;">Transaction</th>
+        <th style = "width: 1%;">Operation</th>
+        <th style = "width: 2%;">Name</th>
+        <th style = "width: 6%;">Value</th>
       </tr>
       <% @latest_transactions.each do |transaction| %>
         <tr>
@@ -51,7 +52,8 @@
       <% end %>
     </table>
     <% else %>
-      <p class="cf"><em>There haven't been any domain registrations or updates in the past few blocks</em></p>
+      <p class="cf"><em>There haven't been any name changes past few blocks</em></p>
     <% end %>
   </div>
-<% end %>
+
+

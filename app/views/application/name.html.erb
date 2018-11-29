@@ -6,14 +6,6 @@
       <h2>Summary</h2>
       <table>
         <tr>
-          <td>Status</td>
-          <td><%= @output["expired"] == false ? 'active' : 'expired' %></td>
-        </tr>
-        <tr>
-          <td>Expires after block</td>
-          <td><%= @output["expires_in"] %></td>
-        </tr>
-        <tr>
           <td>Last update</td>
           <td><a href="/block/<%= @output['height'] %>"><%= @output["height"] %></a></td>
         </tr>
